@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paddle Board — Office Pickleball Tournament</title>
+<style>
+  :root{
+    --bg:#EEF2ED;
+    --panel:#FFFFFF;
+    --line:#D6DFD5;
+    --ink:#16302E;
+    --muted:#5C726D;
+    --court:#0F6B66;
+    --court-dark:#0B4F4B;
+    --ball:#F0B429;
+    --ball-dark:#C6910E;
+    --win:#2E9E64;
+    --loss:#D85C43;
+    --win-bg:#E8F5EC;
+    --loss-bg:#FBEAE6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+  }
+  .headline{
+    font-family:"Arial Narrow",Helvetica,Arial,sans-serif;
+    font-weight:800;
+    letter-spacing:-0.01em;
+  }
+  .nums{ font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+
+  /* ---------- Header ---------- */
+  header.top{
+    background:var(--court);
+    color:#fff;
+    border-bottom:4px solid var(--ball);
+  }
+  .top-inner{
+    max-width:1000px;
+    margin:0 auto;
+    padding:22px 20px 18px;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+  .brand h1{
+    margin:0;
+    font-size:34px;
+    line-height:1;
+    color:#fff;
+  }
+  .brand p{
+    margin:6px 0 0;
+    color:#CFE9E4;
+    font-size:14.5px;
+    max-width:480px;
+  }
+  .hero-stat{
+    text-align:right;
+  }
+  .hero-stat .big{
+    font-size:44px;
+    font-weight:800;
+    font-family:"Arial Narrow",Helvetica,Arial,sans-serif;
+    color:var(--ball);
+    line-height:1;
+  }
+  .hero-stat .lbl{
+    font-size:12.5px;
+    color:#CFE9E4;
+    margin-top:2px;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{
+    max-width:1000px;
+    margin:0 auto;
+    display:flex;
+    gap:2px;
+    padding:0 20px;
+    background:var(--court-dark);
+    overflow-x:auto;
+  }
+  .tab-btn{
+    appearance:none;
+    border:none;
+    background:transparent;
+    color:#BFE0DA;
+    font-size:14.5px;
+    font-weight:600;
+    padding:13px 16px;
+    cursor:pointer;
+    white-space:nowrap;
+    border-bottom:3px solid transparent;
+  }
+  .tab-btn:hover{ color:#fff; }
+  .tab-btn.active{
+    color:#fff;
+    border-bottom:3px solid var(--ball);
+    background:rgba(255,255,255,0.06);
+  }
+
+  main{
+    max-width:1000px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+
+  section{ margin-bottom:40px; }
+  section h2{
+    font-size:22px;
+    margin:0 0 4px;
+  }
+  .section-note{
+    color:var(--muted);
+    font-size:13.5px;
+    margin:0 0 16px;
+  }
+
+  .cat-format{
+    color:var(--muted);
+    font-size:14px;
+    margin:2px 0 0;
+    max-width:640px;
+  }
+  .cat-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;
+    margin-bottom:24px;
+  }
+  .cat-head h2{ font-size:26px; }
+  .reset-btn{
+    appearance:none;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--muted);
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .reset-btn:hover{ border-color:var(--loss); color:var(--loss); }
+
+  /* ---------- Match rows ---------- */
+  .match-list{ border-top:1px solid var(--line); }
+  .match-row{
+    display:grid;
+    grid-template-columns:34px 1fr 62px 20px 62px 1fr 90px;
+    align-items:center;
+    gap:10px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .match-num{
+    color:var(--muted);
+    font-size:12.5px;
+    font-weight:700;
+  }
+  .side{
+    min-width:0;
+  }
+  .side .name{
+    font-weight:600;
+    font-size:14.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .side.right .name{ text-align:right; }
+  .side .roster{
+    color:var(--muted);
+    font-size:11.5px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .side.winner .name{ color:var(--win); }
+  .vs{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    font-weight:700;
+  }
+  .score-input{
+    width:56px;
+    padding:7px 6px;
+    text-align:center;
+    border:1px solid var(--line);
+    border-radius:5px;
+    font-size:14.5px;
+    font-family:inherit;
+  }
+  .score-input:focus{ outline:2px solid var(--court); outline-offset:1px; border-color:var(--court);}
+  .row-action{ text-align:right; }
+  .save-btn{
+    appearance:none;
+    background:var(--court);
+    color:#fff;
+    border:none;
+    padding:8px 12px;
+    border-radius:5px;
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .save-btn:hover{ background:var(--court-dark); }
+  .save-btn.saved{ background:var(--win); }
+  .row-error{
+    grid-column:1 / -1;
+    color:var(--loss);
+    font-size:12px;
+    margin-top:-4px;
+  }
+
+  @media (max-width:600px){
+    .match-row{
+      grid-template-columns:1fr 1fr;
+      grid-template-areas:
+        "num num"
+        "a a"
+        "vs vs"
+        "b b"
+        "action action";
+      row-gap:6px;
+      padding:14px 0;
+    }
+    .match-num{ grid-area:num; }
+    .side:nth-of-type(1){ grid-area:a; }
+    .vs{ grid-area:vs; display:flex; justify-content:center; gap:10px; align-items:center;}
+    .side.right{ grid-area:b; text-align:left; }
+    .side.right .name, .side.right .roster{ text-align:left; }
+    .row-action{ grid-area:action; text-align:left; }
+  }
+
+  /* ---------- Standings ---------- */
+  .table-scroll{ overflow-x:auto; }
+  table.standings{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+  table.standings th{
+    text-align:left;
+    font-size:11.5px;
+    color:var(--muted);
+    font-weight:700;
+    padding:8px 10px;
+    border-bottom:2px solid var(--ink);
+  }
+  table.standings td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  table.standings tr.qualified td{ background:var(--win-bg); }
+  table.standings td.rank{ font-weight:800; width:28px; }
+  table.standings td.name{ font-weight:600; }
+  .pool-title{
+    font-size:15px;
+    font-weight:700;
+    margin:22px 0 8px;
+  }
+  .pool-title:first-child{ margin-top:0; }
+  .pool-winner-tag{
+    display:inline-block;
+    margin-left:8px;
+    background:var(--ball);
+    color:#3A2C00;
+    font-size:11px;
+    font-weight:700;
+    padding:2px 7px;
+    border-radius:4px;
+    vertical-align:middle;
+  }
+
+  /* ---------- Playoffs ---------- */
+  .bracket{
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    padding-bottom:8px;
+  }
+  .bracket-node{
+    flex:0 0 190px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:var(--panel);
+    padding:12px;
+  }
+  .bracket-node .stage-lbl{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--court);
+    margin-bottom:8px;
+  }
+  .bracket-slot{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:13.5px;
+    gap:6px;
+  }
+  .bracket-slot:last-of-type{ border-bottom:none; }
+  .bracket-slot .pname{
+    font-weight:600;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .bracket-slot.tbd .pname{ color:var(--muted); font-weight:400; font-style:italic; }
+  .bracket-slot.winner .pname{ color:var(--win); }
+  .bracket-score-input{
+    width:38px;
+    padding:4px 3px;
+    text-align:center;
+    border:1px solid var(--line);
+    border-radius:4px;
+    font-size:13px;
+  }
+  .bracket-save{
+    margin-top:8px;
+    width:100%;
+    appearance:none;
+    background:var(--court);
+    color:#fff;
+    border:none;
+    padding:6px 8px;
+    border-radius:5px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .bracket-save:hover{ background:var(--court-dark); }
+  .bracket-note{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+  .locked-msg{
+    color:var(--muted);
+    font-size:13.5px;
+    padding:20px;
+    text-align:center;
+    border:1px dashed var(--line);
+    border-radius:6px;
+  }
+
+  .status-line{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:16px;
+  }
+  .status-line .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--win);
+    display:inline-block;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:20px;
+  }
+
+  .loading-screen{
+    max-width:1000px;
+    margin:60px auto;
+    text-align:center;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <h1 class="headline">PADDLE BOARD</h1>
+      <p>Office Pickleball Tournament — live scores, standings and playoff brackets for all four events.</p>
+    </div>
+    <div class="hero-stat">
+      <div class="big nums" id="hero-count">–</div>
+      <div class="lbl">matches played across all events</div>
+    </div>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+
+<main id="main">
+  <div class="loading-screen">Loading tournament data…</div>
+</main>
+
+<footer>Scores are shared with everyone using this page. Win = 2 pts, loss = 0. Ties are broken by head-to-head result, then by point difference.</footer>
+
+<script>
+(function(){
+
+  // ---------------------------------------------------------------
+  // Tournament configuration (from the four schedule documents)
+  // ---------------------------------------------------------------
+  const CATEGORIES = {
+    ms: {
+      key:'ms', title:"Men's Singles", short:"Men's Singles",
+      format:"5 players compete in a single round-robin league — each plays every other player once. The top 4 advance to IPL-style playoffs.",
+      type:'roundrobin',
+      participants:[
+        {id:'prabu',name:'Prabu'},
+        {id:'karthik',name:'Karthik'},
+        {id:'bharani',name:'Bharani'},
+        {id:'prashanth',name:'Prashanth'},
+        {id:'kg',name:'KG'},
+      ],
+      matches:[
+        {id:'L1',a:'prabu',b:'karthik'},
+        {id:'L2',a:'bharani',b:'prashanth'},
+        {id:'L3',a:'prabu',b:'bharani'},
+        {id:'L4',a:'karthik',b:'kg'},
+        {id:'L5',a:'prashanth',b:'prabu'},
+        {id:'L6',a:'bharani',b:'kg'},
+        {id:'L7',a:'karthik',b:'prashanth'},
+        {id:'L8',a:'prabu',b:'kg'},
+        {id:'L9',a:'karthik',b:'bharani'},
+        {id:'L10',a:'prashanth',b:'kg'},
+      ]
+    },
+    md: {
+      key:'md', title:"Mixed Doubles", short:"Mixed Doubles",
+      format:"5 teams compete in a single round-robin league — each plays every other team once. The top 4 advance to IPL-style playoffs.",
+      type:'roundrobin',
+      participants:[
+        {id:'A',name:'Team A', roster:['Prabu','Ramya','Aishwarya Lakshmi','Kiruthika']},
+        {id:'B',name:'Team B', roster:['Karthik','Ranga Priya','Dheva','Priya']},
+        {id:'C',name:'Team C', roster:['Bharani','Kaviya','Sai Priya']},
+        {id:'D',name:'Team D', roster:['Prashanth','Aiswarya RP','Shalini']},
+        {id:'E',name:'Team E', roster:['KG','Pavithra','Anitha S','Manthra']},
+      ],
+      matches:[
+        {id:'L1',a:'A',b:'B'},{id:'L2',a:'C',b:'D'},{id:'L3',a:'A',b:'C'},{id:'L4',a:'B',b:'E'},{id:'L5',a:'A',b:'D'},
+        {id:'L6',a:'C',b:'E'},{id:'L7',a:'B',b:'D'},{id:'L8',a:'A',b:'E'},{id:'L9',a:'B',b:'C'},{id:'L10',a:'D',b:'E'},
+      ]
+    },
+    wd: {
+      key:'wd', title:"Women's Doubles", short:"Women's Doubles",
+      format:"6 teams compete in a single round-robin league — each plays every other team once. The top 4 advance to IPL-style playoffs.",
+      type:'roundrobin',
+      participants:[
+        {id:'t1',name:'Team 1', roster:['Rangu (C)','Manthra','Sai']},
+        {id:'t2',name:'Team 2', roster:['Kaviya (C)','Ani']},
+        {id:'t3',name:'Team 3', roster:['Pavi (C)','Priya']},
+        {id:'t4',name:'Team 4', roster:['Aishwarya RP (C)','AL']},
+        {id:'t5',name:'Team 5', roster:['Ramya (C)','Kiruthika']},
+        {id:'t6',name:'Team 6', roster:['Dheva (C)','Shalini']},
+      ],
+      matches:[
+        {id:'L1',a:'t1',b:'t2'},{id:'L2',a:'t3',b:'t4'},{id:'L3',a:'t5',b:'t6'},{id:'L4',a:'t1',b:'t3'},{id:'L5',a:'t2',b:'t5'},
+        {id:'L6',a:'t4',b:'t6'},{id:'L7',a:'t1',b:'t4'},{id:'L8',a:'t2',b:'t6'},{id:'L9',a:'t3',b:'t5'},{id:'L10',a:'t1',b:'t5'},
+        {id:'L11',a:'t2',b:'t4'},{id:'L12',a:'t3',b:'t6'},{id:'L13',a:'t1',b:'t6'},{id:'L14',a:'t2',b:'t3'},{id:'L15',a:'t4',b:'t5'},
+      ]
+    },
+    ws: {
+      key:'ws', title:"Women's Singles", short:"Women's Singles",
+      format:"Players are split into 4 pools. Everyone plays everyone else in their pool once, and each pool winner advances to the semi-finals.",
+      type:'pools',
+      pools:[
+        {id:'p1', label:'Pool 1',
+          participants:[{id:'pavi',name:'Pavi'},{id:'kaviya',name:'Kaviya'},{id:'aishu',name:'Aishu'},{id:'kiruthika',name:'Kiruthika'}],
+          matches:[
+            {id:'p1-M1',a:'pavi',b:'kaviya'},{id:'p1-M2',a:'aishu',b:'kiruthika'},{id:'p1-M3',a:'pavi',b:'aishu'},
+            {id:'p1-M4',a:'kaviya',b:'kiruthika'},{id:'p1-M5',a:'pavi',b:'kiruthika'},{id:'p1-M6',a:'kaviya',b:'aishu'}
+          ]},
+        {id:'p2', label:'Pool 2',
+          participants:[{id:'rangu',name:'Rangu'},{id:'dheva',name:'Dheva'},{id:'priya',name:'Priya'}],
+          matches:[
+            {id:'p2-M1',a:'rangu',b:'dheva'},{id:'p2-M2',a:'rangu',b:'priya'},{id:'p2-M3',a:'dheva',b:'priya'}
+          ]},
+        {id:'p3', label:'Pool 3',
+          participants:[{id:'ramya',name:'Ramya'},{id:'shalini',name:'Shalini'},{id:'manthra',name:'Manthra'}],
+          matches:[
+            {id:'p3-M1',a:'ramya',b:'shalini'},{id:'p3-M2',a:'ramya',b:'manthra'},{id:'p3-M3',a:'shalini',b:'manthra'}
+          ]},
+        {id:'p4', label:'Pool 4',
+          participants:[{id:'arp',name:'ARP'},{id:'ani',name:'Ani'},{id:'sai',name:'Sai'}],
+          matches:[
+            {id:'p4-M1',a:'arp',b:'ani'},{id:'p4-M2',a:'arp',b:'sai'},{id:'p4-M3',a:'ani',b:'sai'}
+          ]},
+      ]
+    }
+  };
+  const CAT_ORDER = ['ms','ws','wd','md'];
+
+  // ---------------------------------------------------------------
+  // State
+  // ---------------------------------------------------------------
+  let state = { ms:{}, ws:{}, wd:{}, md:{} };
+  let activeCat = 'ms';
+  let storageOk = true;
+
+  function hasResult(r){ return r && r.s1!=null && r.s2!=null && !isNaN(r.s1) && !isNaN(r.s2); }
+
+  function getParticipant(cfg, id){
+    if(!id) return null;
+    if(cfg.type==='roundrobin') return cfg.participants.find(p=>p.id===id) || null;
+    for(const pool of cfg.pools){
+      const f = pool.participants.find(p=>p.id===id);
+      if(f) return f;
+    }
+    return null;
+  }
+
+  function allMatchesOf(cfg){
+    if(cfg.type==='roundrobin') return cfg.matches;
+    return cfg.pools.reduce((acc,p)=>acc.concat(p.matches),[]);
+  }
+
+  // ---------------------------------------------------------------
+  // Standings with head-to-head then point-difference tie-break
+  // ---------------------------------------------------------------
+  function computeStandings(participantIds, matches, results){
+    const stats = {};
+    participantIds.forEach(id=>{ stats[id] = {id, played:0, won:0, lost:0, points:0, pf:0, pa:0}; });
+    matches.forEach(m=>{
+      const r = results[m.id];
+      if(!hasResult(r)) return;
+      if(!stats[m.a] || !stats[m.b]) return;
+      stats[m.a].played++; stats[m.b].played++;
+      stats[m.a].pf += r.s1; stats[m.a].pa += r.s2;
+      stats[m.b].pf += r.s2; stats[m.b].pa += r.s1;
+      if(r.s1 > r.s2){ stats[m.a].won++; stats[m.a].points+=2; stats[m.b].lost++; }
+      else { stats[m.b].won++; stats[m.b].points+=2; stats[m.a].lost++; }
+    });
+    const arr = Object.values(stats);
+    arr.sort((x,y)=>{
+      if(y.points !== x.points) return y.points - x.points;
+      const h2h = matches.find(m=> (m.a===x.id&&m.b===y.id) || (m.a===y.id&&m.b===x.id));
+      if(h2h){
+        const r = results[h2h.id];
+        if(hasResult(r)){
+          const winnerId = r.s1 > r.s2 ? h2h.a : h2h.b;
+          if(winnerId===x.id) return -1;
+          if(winnerId===y.id) return 1;
+        }
+      }
+      const diffX = x.pf-x.pa, diffY = y.pf-y.pa;
+      if(diffY !== diffX) return diffY - diffX;
+      return x.id.localeCompare(y.id);
+    });
+    return arr;
+  }
+
+  function leagueComplete(matches, results){
+    return matches.every(m=>hasResult(results[m.id]));
+  }
+
+  // ---------------------------------------------------------------
+  // Playoff slot resolution
+  // ---------------------------------------------------------------
+  function getTop4Slots(cfg, results){
+    const standings = computeStandings(cfg.participants.map(p=>p.id), cfg.matches, results);
+    const ready = leagueComplete(cfg.matches, results) && standings.length>=4;
+    const q1a = ready ? standings[0].id : null;
+    const q1b = ready ? standings[1].id : null;
+    const ea  = ready ? standings[2].id : null;
+    const eb  = ready ? standings[3].id : null;
+
+    const q1res = results['Q1'], eres = results['E'];
+    let q2a=null, q2b=null;
+    if(q1a && q1b && hasResult(q1res)) q2a = q1res.s1>q1res.s2 ? q1b : q1a; // Q1 loser
+    if(ea && eb && hasResult(eres)) q2b = eres.s1>eres.s2 ? ea : eb;         // Eliminator winner
+
+    const q2res = results['Q2'];
+    let fa=null, fb=null;
+    if(q1a && q1b && hasResult(q1res)) fa = q1res.s1>q1res.s2 ? q1a : q1b;   // Q1 winner
+    if(q2a && q2b && hasResult(q2res)) fb = q2res.s1>q2res.s2 ? q2a : q2b;   // Q2 winner
+
+    return [
+      {id:'Q1', label:'Qualifier 1', a:q1a, b:q1b, result:results['Q1']},
+      {id:'E',  label:'Eliminator',  a:ea,  b:eb,  result:results['E']},
+      {id:'Q2', label:'Qualifier 2', a:q2a, b:q2b, result:results['Q2']},
+      {id:'F',  label:'Final',       a:fa,  b:fb,  result:results['F']},
+    ];
+  }
+
+  function getPoolWinner(pool, results){
+    if(!leagueComplete(pool.matches, results)) return null;
+    const st = computeStandings(pool.participants.map(p=>p.id), pool.matches, results);
+    return st.length ? st[0].id : null;
+  }
+
+  function getPoolSlots(cfg, results){
+    const w = {};
+    cfg.pools.forEach(p=>{ w[p.id] = getPoolWinner(p, results); });
+    const sf1a = w['p1'], sf1b = w['p4'];
+    const sf2a = w['p2'], sf2b = w['p3'];
+    const sf1res = results['SF1'], sf2res = results['SF2'];
+    let fa=null, fb=null;
+    if(sf1a && sf1b && hasResult(sf1res)) fa = sf1res.s1>sf1res.s2 ? sf1a : sf1b;
+    if(sf2a && sf2b && hasResult(sf2res)) fb = sf2res.s1>sf2res.s2 ? sf2a : sf2b;
+    return [
+      {id:'SF1', label:'Semi-Final 1', a:sf1a, b:sf1b, result:results['SF1']},
+      {id:'SF2', label:'Semi-Final 2', a:sf2a, b:sf2b, result:results['SF2']},
+      {id:'F',   label:'Final',        a:fa,   b:fb,   result:results['F']},
+    ];
+  }
+
+  // ---------------------------------------------------------------
+  // Storage
+  // ---------------------------------------------------------------
+  async function loadAll(){
+    for(const key of CAT_ORDER){
+      try{
+        const res = await window.storage.get(`results:${key}`, true);
+        state[key] = res && res.value ? JSON.parse(res.value) : {};
+      }catch(e){
+        state[key] = {};
+      }
+    }
+  }
+
+  async function saveResults(catKey){
+    try{
+      await window.storage.set(`results:${catKey}`, JSON.stringify(state[catKey]), true);
+      return true;
+    }catch(e){
+      storageOk = false;
+      return false;
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Rendering
+  // ---------------------------------------------------------------
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderTabs(){
+    const tabs = document.getElementById('tabs');
+    tabs.innerHTML = CAT_ORDER.map(key=>{
+      const cfg = CATEGORIES[key];
+      return `<button class="tab-btn ${key===activeCat?'active':''}" data-cat="${key}">${esc(cfg.short)}</button>`;
+    }).join('');
+    tabs.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ activeCat = btn.dataset.cat; renderAll(); });
+    });
+  }
+
+  function renderHero(){
+    let played=0, total=0;
+    CAT_ORDER.forEach(key=>{
+      const cfg = CATEGORIES[key];
+      const matches = allMatchesOf(cfg);
+      total += matches.length;
+      played += matches.filter(m=>hasResult(state[key][m.id])).length;
+      // playoff matches
+      let slots = cfg.type==='roundrobin' ? getTop4Slots(cfg, state[key]) : getPoolSlots(cfg, state[key]);
+      total += slots.length;
+      played += slots.filter(s=>hasResult(s.result)).length;
+    });
+    document.getElementById('hero-count').textContent = `${played}/${total}`;
+  }
+
+  function matchRowHtml(cfg, m, results, idx){
+    const pa = getParticipant(cfg, m.a);
+    const pb = getParticipant(cfg, m.b);
+    const r = results[m.id];
+    const done = hasResult(r);
+    const aWin = done && r.s1 > r.s2;
+    const bWin = done && r.s2 > r.s1;
+    const va = done ? r.s1 : '';
+    const vb = done ? r.s2 : '';
+    return `
+      <div class="match-row" data-mid="${m.id}">
+        <div class="match-num">${idx}</div>
+        <div class="side ${aWin?'winner':''}">
+          <div class="name">${esc(pa.name)}</div>
+          ${pa.roster?`<div class="roster">${esc(pa.roster.join(', '))}</div>`:''}
+        </div>
+        <input type="number" class="score-input" data-side="a" value="${va}" inputmode="numeric" aria-label="${esc(pa.name)} score">
+        <div class="vs">vs</div>
+        <input type="number" class="score-input" data-side="b" value="${vb}" inputmode="numeric" aria-label="${esc(pb.name)} score">
+        <div class="side right ${bWin?'winner':''}">
+          <div class="name">${esc(pb.name)}</div>
+          ${pb.roster?`<div class="roster">${esc(pb.roster.join(', '))}</div>`:''}
+        </div>
+        <div class="row-action"><button class="save-btn ${done?'saved':''}" data-action="save-league">${done?'Update':'Save'}</button></div>
+      </div>
+    `;
+  }
+
+  function attachLeagueHandlers(container, catKey, matches){
+    container.querySelectorAll('.match-row').forEach(row=>{
+      const mid = row.dataset.mid;
+      const btn = row.querySelector('[data-action="save-league"]');
+      btn.addEventListener('click', async ()=>{
+        const inputA = row.querySelector('[data-side="a"]');
+        const inputB = row.querySelector('[data-side="b"]');
+        const s1 = parseFloat(inputA.value);
+        const s2 = parseFloat(inputB.value);
+        const existingErr = row.parentElement.querySelector(`.row-error[data-for="${mid}"]`);
+        if(existingErr) existingErr.remove();
+        if(isNaN(s1) || isNaN(s2)){
+          insertRowError(row, mid, 'Enter a score for both sides.');
+          return;
+        }
+        if(s1 === s2){
+          insertRowError(row, mid, "Scores can't be tied — pickleball games need a winner.");
+          return;
+        }
+        state[catKey][mid] = {s1,s2};
+        btn.textContent = 'Saving…';
+        await saveResults(catKey);
+        renderAll();
+      });
+    });
+  }
+
+  function insertRowError(row, mid, msg){
+    const err = document.createElement('div');
+    err.className = 'row-error';
+    err.dataset.for = mid;
+    err.textContent = msg;
+    row.after(err);
+  }
+
+  function renderStandingsTable(standings, cfg, qualifiedCount){
+    const label = cfg.type==='roundrobin' && cfg.participants[0].roster ? 'Team' : 'Player';
+    let rows = standings.map((s,i)=>{
+      const p = getParticipant(cfg, s.id);
+      return `<tr class="${i<qualifiedCount?'qualified':''}">
+        <td class="rank">${i+1}</td>
+        <td class="name">${esc(p.name)}</td>
+        <td class="nums">${s.played}</td>
+        <td class="nums">${s.won}</td>
+        <td class="nums">${s.lost}</td>
+        <td class="nums">${s.points}</td>
+        <td class="nums">${s.pf-s.pa>0?'+':''}${s.pf-s.pa}</td>
+      </tr>`;
+    }).join('');
+    return `
+      <div class="table-scroll">
+      <table class="standings">
+        <thead><tr>
+          <th></th><th>${label}</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>Diff</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      </div>
+    `;
+  }
+
+  function bracketNodeHtml(cfg, slot, catKey){
+    const pa = getParticipant(cfg, slot.a);
+    const pb = getParticipant(cfg, slot.b);
+    const done = hasResult(slot.result);
+    const aWin = done && slot.result.s1 > slot.result.s2;
+    const bWin = done && slot.result.s2 > slot.result.s1;
+    const revealed = !!(slot.a && slot.b);
+
+    let body;
+    if(!revealed){
+      body = `
+        <div class="bracket-slot tbd"><span class="pname">To be decided</span></div>
+        <div class="bracket-slot tbd"><span class="pname">To be decided</span></div>
+        <div class="bracket-note">Unlocks once earlier results are in.</div>
+      `;
+    } else {
+      body = `
+        <div class="bracket-slot ${aWin?'winner':''}">
+          <span class="pname">${esc(pa.name)}</span>
+          <input type="number" class="bracket-score-input" data-side="a" value="${done?slot.result.s1:''}" inputmode="numeric" aria-label="${esc(pa.name)} score">
+        </div>
+        <div class="bracket-slot ${bWin?'winner':''}">
+          <span class="pname">${esc(pb.name)}</span>
+          <input type="number" class="bracket-score-input" data-side="b" value="${done?slot.result.s2:''}" inputmode="numeric" aria-label="${esc(pb.name)} score">
+        </div>
+        <button class="bracket-save" data-slot="${slot.id}">${done?'Update':'Save'}</button>
+        <div class="bracket-note bracket-err" data-slot-err="${slot.id}"></div>
+      `;
+    }
+    return `<div class="bracket-node"><div class="stage-lbl">${esc(slot.label)}</div>${body}</div>`;
+  }
+
+  function attachBracketHandlers(container, catKey, slots){
+    slots.forEach(slot=>{
+      const btn = container.querySelector(`.bracket-save[data-slot="${slot.id}"]`);
+      if(!btn) return;
+      const node = btn.closest('.bracket-node');
+      btn.addEventListener('click', async ()=>{
+        const inputA = node.querySelector('[data-side="a"]');
+        const inputB = node.querySelector('[data-side="b"]');
+        const s1 = parseFloat(inputA.value);
+        const s2 = parseFloat(inputB.value);
+        const errBox = node.querySelector(`[data-slot-err="${slot.id}"]`);
+        errBox.textContent = '';
+        if(isNaN(s1) || isNaN(s2)){ errBox.textContent = 'Enter a score for both sides.'; return; }
+        if(s1 === s2){ errBox.textContent = "Scores can't be tied."; return; }
+        state[catKey][slot.id] = {s1,s2};
+        await saveResults(catKey);
+        renderAll();
+      });
+    });
+  }
+
+  function renderCategory(catKey){
+    const cfg = CATEGORIES[catKey];
+    const results = state[catKey];
+    const wrap = document.createElement('div');
+
+    // Header
+    const headEl = document.createElement('div');
+    headEl.className = 'cat-head';
+    headEl.innerHTML = `
+      <div>
+        <h2 class="headline">${esc(cfg.title)}</h2>
+        <p class="cat-format">${esc(cfg.format)}</p>
+      </div>
+      <button class="reset-btn" id="reset-btn">Reset this event's scores</button>
+    `;
+    wrap.appendChild(headEl);
+
+    // League section(s)
+    if(cfg.type==='roundrobin'){
+      const sec = document.createElement('section');
+      const done = cfg.matches.filter(m=>hasResult(results[m.id])).length;
+      sec.innerHTML = `
+        <h2>League matches</h2>
+        <div class="status-line"><span class="dot"></span>${done} of ${cfg.matches.length} played</div>
+        <div class="match-list">${cfg.matches.map((m,i)=>matchRowHtml(cfg,m,results,i+1)).join('')}</div>
+      `;
+      wrap.appendChild(sec);
+      attachLeagueHandlers(sec, catKey, cfg.matches);
+
+      const standings = computeStandings(cfg.participants.map(p=>p.id), cfg.matches, results);
+      const secS = document.createElement('section');
+      secS.innerHTML = `
+        <h2>Standings</h2>
+        <p class="section-note">Top 4 (highlighted) advance to the playoffs.</p>
+        ${renderStandingsTable(standings, cfg, 4)}
+      `;
+      wrap.appendChild(secS);
+
+      const slots = getTop4Slots(cfg, results);
+      const secP = document.createElement('section');
+      secP.innerHTML = `
+        <h2>Playoffs</h2>
+        <p class="section-note">Qualifier 1: Rank 1 vs Rank 2. Eliminator: Rank 3 vs Rank 4. Qualifier 2: Qualifier 1 loser vs Eliminator winner. Final: Qualifier 1 winner vs Qualifier 2 winner.</p>
+        <div class="bracket">${slots.map(s=>bracketNodeHtml(cfg,s,catKey)).join('')}</div>
+      `;
+      wrap.appendChild(secP);
+      attachBracketHandlers(secP, catKey, slots);
+
+    } else {
+      // pools type (Women's Singles)
+      const sec = document.createElement('section');
+      let html = `<h2>Pool matches</h2>`;
+      cfg.pools.forEach(pool=>{
+        const done = pool.matches.filter(m=>hasResult(results[m.id])).length;
+        html += `
+          <div class="pool-title">${esc(pool.label)} <span style="font-weight:400;color:var(--muted);font-size:13px;">— ${done}/${pool.matches.length} played</span></div>
+          <div class="match-list" data-pool="${pool.id}">${pool.matches.map((m,i)=>matchRowHtml(cfg,m,results,i+1)).join('')}</div>
+        `;
+      });
+      sec.innerHTML = html;
+      wrap.appendChild(sec);
+      cfg.pools.forEach(pool=>{
+        attachLeagueHandlers(sec.querySelector(`[data-pool="${pool.id}"]`), catKey, pool.matches);
+      });
+
+      const secS = document.createElement('section');
+      let sHtml = `<h2>Pool standings</h2><p class="section-note">The winner of each pool (highlighted) advances to the semi-finals.</p>`;
+      cfg.pools.forEach(pool=>{
+        const st = computeStandings(pool.participants.map(p=>p.id), pool.matches, results);
+        const winnerDone = leagueComplete(pool.matches, results);
+        sHtml += `<div class="pool-title">${esc(pool.label)}${winnerDone && st.length?`<span class="pool-winner-tag">${esc(getParticipant(cfg,st[0].id).name)} advances</span>`:''}</div>`;
+        sHtml += renderStandingsTable(st, cfg, 1);
+      });
+      secS.innerHTML = sHtml;
+      wrap.appendChild(secS);
+
+      const slots = getPoolSlots(cfg, results);
+      const secP = document.createElement('section');
+      secP.innerHTML = `
+        <h2>Playoffs</h2>
+        <p class="section-note">Semi-Final 1: Pool 1 winner vs Pool 4 winner. Semi-Final 2: Pool 2 winner vs Pool 3 winner. Final: winners of both semi-finals.</p>
+        <div class="bracket">${slots.map(s=>bracketNodeHtml(cfg,s,catKey)).join('')}</div>
+      `;
+      wrap.appendChild(secP);
+      attachBracketHandlers(secP, catKey, slots);
+    }
+
+    // reset handler
+    headEl.querySelector('#reset-btn').addEventListener('click', async ()=>{
+      const ok = confirm(`Reset all scores for ${cfg.title}? This can't be undone.`);
+      if(!ok) return;
+      state[catKey] = {};
+      await saveResults(catKey);
+      renderAll();
+    });
+
+    return wrap;
+  }
+
+  function renderAll(){
+    renderTabs();
+    renderHero();
+    const main = document.getElementById('main');
+    main.innerHTML = '';
+    main.appendChild(renderCategory(activeCat));
+  }
+
+  // ---------------------------------------------------------------
+  // Boot
+  // ---------------------------------------------------------------
+  async function boot(){
+    await loadAll();
+    renderAll();
+  }
+  boot();
+
+})();
+</script>
+</body>
+</html>
